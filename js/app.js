@@ -62,6 +62,10 @@ var app = app || {};
       this.cardEntries = [];
       var i;
       for (i = 0; i < this.cardSize; i++) {
+        if (i === 12) {
+          this.cardEntries.push("FREE");
+          continue;
+        }
         this.cardEntries.push(entryPool.splice([entryPool.length * rng() | 0], 1)[0])
       }
     }
