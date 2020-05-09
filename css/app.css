@@ -1,1 +1,32 @@
-/* base.css overrides */
+table {
+  width: 100%;
+}
+td {
+  width: 20.00%;
+  position: relative;
+}
+td:after {
+  content: '';
+  display: block;
+  margin-top: 100%;
+}
+
+td.bingoHeaderCell:after {
+  margin-top: 50%;
+}
+
+td .content {
+  position: absolute;
+  top: 50%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: gold;
+  text-align: center; 
+  vertical-align: middle;
+  padding: 3px 3px;
+}
+
+td .selected {
+    background: red;
+}
