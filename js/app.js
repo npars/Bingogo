@@ -21,11 +21,12 @@ var app = app || {};
   var serializeGame = function(bingoGame) {
     const version = 100;
     var delimitedGame = [version, bingoGame.seed, bingoGame.gameName, ...bingoGame.gameEntries].join("\0");
-    return LZString.compressToBase64(delimitedGame);
+    return LZString.compressToEncodedURIComponent(delimitedGame);
   }
 
   var deserializeGame = function(compressedGame) {
-    var delimitedGame = LZString.decompressFromBase64(compressedGame);
+    var delimitedGame = LZString.decompressFromEncodedURIComponent(compressedGame);
+
     var gameArray = delimitedGame.split("\0");
     var version = parseInt(gameArray.shift());
     if (version !== 100) {
@@ -50,12 +51,12 @@ var app = app || {};
   class BingoCard {
     cardSize = 5*5;
 
-    constructor(bingoGame, cardNumber) {
+    constructor(bingoGame, cardId) {
       this.bingoGame = bingoGame;
-      this.cardNumber = cardNumber;
+      this.cardId = cardId;
       this.state = [[],[],[],[],[]]
 
-      var rng = mulberry32(this.bingoGame.seed * (this.cardNumber * 7));
+      var rng = mulberry32(this.bingoGame.seed * (this.cardId * 7));
 
       var entryPool = [...this.bingoGame.gameEntries]
       this.cardEntries = [];
@@ -83,13 +84,15 @@ var app = app || {};
       var seed = (Math.random() * 0x7FFFFFFF) | 0;
       
       var serializedGame = serializeGame(new BingoGame(seed, gameName, entriesArray)); 
-      window.location.href = '#!/game?g=' + serializedGame;
+      window.location.href = '#!/game/' + serializedGame;
     }
 
     return {
       view: function(vnode) {
         return [
-          m(Toolbar, { style: { backgroundColor: bgColour }, shadowDepth: 1}, [m(ToolbarTitle, { text: "Design Your Game", center: false})]),
+          m(Toolbar, { style: { backgroundColor: bgColour }, shadowDepth: 1, compact: true}, [
+            m(ToolbarTitle, { text: "Design Your Game", center: false})
+          ]),
           m(Button, {events: {onclick: createGame}}, "Create Game"),
           m(TextField, {
             label: "Game Title",
@@ -111,15 +114,38 @@ var app = app || {};
   }
 
   const GamePage = function(initialVnode) {
+    var newCard = function() {
+      var cardId = (Math.random() * 100000) | 0
+      window.location.href = "#!/game/" + m.route.param("gameId") + "/" + cardId;
+    }
+
     return {
       view: function(vnode) {
-        return m("div", "Game Page")
+        var serializedGame = m.route.param("gameId");
+        if (!serializedGame) {
+          return m("div", "Invalid Game URL!")
+        }
+        var bingoGame = deserializeGame(serializedGame);
+        
+        return [
+          m(Toolbar, { style: { backgroundColor: bgColour }, shadowDepth: 1, compact: true}, [
+            m(ToolbarTitle, { text: bingoGame.gameName, center: false})
+          ]),
+          m(Button, {events: {onclick: newCard}}, "Give me a card!"),
+        ]
       }
     }
   }
 
   const BingoCardPage = function(initialVnode) {
-    var bingoCard = new BingoCard(new BingoGame(124152, "Music Video Bingo","The Beatles,The Supremes,Huey Lewis and the News,The E-Street Band,The Four Tops,Peaches And Herb,Destiny's Child,The Rolling Stones,The Who,Rush,The Spin Doctors,The Hives,Fallout Boy,All American Rejects,This Day and Age,Backstreet Boys,N Sync,Hansen,Hawthorne Heights,My Chemical Romance,Linkin Park,The Cars,Blink 182,Greenday,U2,Sha-na-nah,Stone Temple Pilots,Hellogoodbye,Nirvana,Weezer,Sum 41,The Vines,The Strokes,Cream,Dave Matthews Band,Cheap Trick,The Knack,The Romantics,Genesis,98 Degrees,Dave Clark Five,The Raspberries,Nitty Gritty Dirt Band,The Police,Barenaked Ladies,Baha Men,Steely Dan,Good Charlotte,Taking Back Sunday,Newfound Glory,Dashboard Confessional,Creed,Red Hot Chili Peppers".split(",")), 1001);
+    var serializedGame = m.route.param("gameId");
+    if (!serializedGame) {
+      return m("div", "Invalid Game URL!")
+    }
+    var bingoGame = deserializeGame(serializedGame);
+
+    var cardId = m.route.param("cardId");
+    var bingoCard = new BingoCard(bingoGame, cardId);
 
     var BingoTable = {
       view: function() {
@@ -139,7 +165,10 @@ var app = app || {};
     return {
       view: function(vnode) {
         return [ 
-          // m("div", serializeGame(bingoCard.seed, bingoCard.gameName, bingoCard.entries)),
+          m(Toolbar, { style: { backgroundColor: bgColour }, shadowDepth: 1, compact: true}, [
+            m(ToolbarTitle, { text: bingoGame.gameName}),
+            m(ToolbarTitle, { text: "Card #" + bingoCard.cardId, style: { "text-align": "right" }}),
+          ]),
           m(BingoTable)
         ];
       }
@@ -149,7 +178,7 @@ var app = app || {};
   // Route ////////////////////////
   m.route(document.getElementById("root"), "/create", {
     "/create": CreatePage,
-    "/game": GamePage,
-    "/card": BingoCardPage,
+    "/game/:gameId": GamePage,
+    "/game/:gameId/:cardId": BingoCardPage,
 })
 })(window);
