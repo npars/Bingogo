@@ -1,16 +1,34 @@
-body {
-  margin: 0
+.col {
+  padding: 0 .75rem;
 }
 
 table {
   width: 600px;
+}
+
+.bingoContainer {
   margin-left: auto;
   margin-right: auto;
+  display: flex;
+  justify-content: center;
+  padding-left: 0.75em;
+  padding-right: 0.75em;
 }
-td {
+
+.bingoTable {
+  margin-top: 0.75em;
+}
+
+.bingoTable td {
+  padding: 0 0;
   width: 20.00%;
   position: relative;
 }
+
+table, th, td {
+  border: 1px solid black;
+}
+
 td:after {
   content: '';
   display: block;
@@ -27,19 +45,20 @@ td .content {
   bottom: 0;
   left: 0;
   right: 0;
-  background: gold;
-  text-align: center; 
-  vertical-align: middle;
+  align-items: center;
+  justify-content: center;
+  display: flex;
   padding: 3px 3px;
 }
 
 td .selected {
-    background: red;
+    background: #f55;
 }
-/* 
-.pe-toolbar__title--center {
-  
-} */
+
+.limit-height {
+  max-height: 300px;
+  overflow-y: scroll !important;
+}
 
 @media only screen and (max-width: 600px) {
   table {

@@ -3,9 +3,9 @@ var app = app || {};
 (function (window) {
   'use strict';
 
-  const { Button, Toolbar, ToolbarTitle, TextField} = polythene
+  // const { Button, Toolbar, ToolbarTitle, TextField} = polythene
 
-  const bgColour = "#ff9800"
+  const bgColour = "#f55"
 
   // Functions ////////////////////////
 
@@ -75,6 +75,21 @@ var app = app || {};
     }
   }
 
+  // Components ///////////////////
+  const NavBar = function(initialVnode) {
+    return { 
+      view: function(vnode) {
+        return m("nav",
+          m("div", {class: "col s12"}, [
+            m("div", {class: "nav-wrapper"}, [
+              m("a", {href: "#", class: "brand-logo"}, "Bingogo")
+            ])
+          ])
+        );
+      }
+    };
+  }
+
   // Pages ////////////////////////
 
   const CreatePage = function(initialVnode) {
@@ -94,24 +109,22 @@ var app = app || {};
     return {
       view: function(vnode) {
         return [
-          m(Toolbar, { style: { backgroundColor: bgColour }, shadowDepth: 1, compact: true}, [
-            m(ToolbarTitle, { text: "Design Your Game", center: false})
+          m(NavBar),
+          m("div", {class: "container"}, [
+            m("div", {class: "row"}, [
+              m("div", {class: "input-field col s12"}, [
+                m("input", {id: "gameTitle", type: "text", class: "validate", oninput: e => gameName = e.target.value}),
+                m("label", {for: "gameTitle"}, "Game Title")
+              ]),
+              m("div", {class: "input-field col s12"}, [
+                m("textarea", {id: "entryTextArea", class: "materialize-textarea limit-height", oninput: e => entriesText = e.target.value}),
+                m("label", {for: "entryTextArea"}, "Bingo Entries")
+              ]),
+              m("div", {class: "input-field col s12"}, [
+                m("a", {class: "waves-effect waves-light btn", onclick: createGame}, "Create Game"),
+              ]),
+            ]),
           ]),
-          m(Button, {events: {onclick: createGame}}, "Create Game"),
-          m(TextField, {
-            label: "Game Title",
-            floatingLabel: true,
-            multiLine: false,
-            onChange: newState => gameName = newState.value
-          }),
-          m(TextField, {
-            label: "Bingo Entries",
-            floatingLabel: true,
-            multiLine: true,
-            rows: 10,
-            defaultValue: defaultEntries,
-            onChange: newState => entriesText = newState.value
-          })
         ]
       }
     }
@@ -132,10 +145,10 @@ var app = app || {};
         var bingoGame = deserializeGame(serializedGame);
         
         return [
-          m(Toolbar, { style: { backgroundColor: bgColour }, shadowDepth: 1, compact: true}, [
-            m(ToolbarTitle, { text: bingoGame.gameName, center: false})
+          m(NavBar),
+          m("div", {class: "input-field col s12 center-align"}, [
+            m("a", {class: "waves-effect waves-light btn-large", onclick: newCard}, "Give me a Card!"),
           ]),
-          m(Button, {events: {onclick: newCard}}, "Give me a card!"),
         ]
       }
     }
@@ -157,11 +170,14 @@ var app = app || {};
         const rowLength = 5;
         const colLength = 5;
   
-        return m("table", {class: "bingoTable"}, 
-          [m("tr", {class: "bingoHeaderRow"}, [...header].map(c => m("td", {class: "bingoHeaderCell"}, m("div", {class: "content"}, c))))].concat(
+        return m("table", {class: "bingoTable card center-align"}, 
+          [m("tr", {class: "bingoHeaderRow"}, [...header].map(c => m("td", {class: "bingoHeaderCell"}, m("div", {class: "content"}, m("div", {class: "valign-wrapper center-align"}, c)))))].concat(
             [...Array(rowLength).keys()].map(row =>
               m("tr", [...Array(colLength).keys()].map(col => 
-                m("td", m("div", {class: "content" + (bingoCard.state[row][col] ? " selected" : ""), onclick: () => bingoCard.toggle(row, col)}, bingoCard.cardEntries[col + row * rowLength]))))
+                m("td", m("div", {class: "content" + (bingoCard.state[row][col] ? " selected" : ""), onclick: () => bingoCard.toggle(row, col)}, 
+                  m("div", {class: "valign-wrapper center-align"}, bingoCard.cardEntries[col + row * rowLength])
+                ))
+              ))
         )));
       }
     }
@@ -169,11 +185,16 @@ var app = app || {};
     return {
       view: function(vnode) {
         return [ 
-          m(Toolbar, { style: { backgroundColor: bgColour }, shadowDepth: 1, compact: true}, [
-            m(ToolbarTitle, { text: bingoGame.gameName}),
-            m(ToolbarTitle, { text: "Card #" + bingoCard.cardId, style: { "text-align": "right" }}),
-          ]),
-          m(BingoTable)
+          m(NavBar),
+          // m(Toolbar, { style: { backgroundColor: bgColour }, shadowDepth: 1, compact: true}, [
+          //   m(ToolbarTitle, { text: bingoGame.gameName}),
+          //   m(ToolbarTitle, { text: "Card #" + bingoCard.cardId, style: { "text-align": "right" }}),
+          // ]),
+          m('div', {class: "bingoContainer"}, [
+            // m('div', {class: "col s12"}, [
+              m(BingoTable)
+            // ])
+          ])
         ];
       }
     }
