@@ -186,8 +186,11 @@ var app = app || {};
         
         return [
           m(NavBar),
+          m('div', {class: "row"}, [
+            m('h5', {class: "col s12 center-align"}, bingoGame.gameName),
+          ]),
           m("div", {class: "input-field col s12 center-align"}, [
-            m("a", {class: "waves-effect waves-light btn-large", onclick: newCard}, "Give me a Card!"),
+            m("a", {class: "waves-effect waves-light btn-large", onclick: newCard}, "Give me a Bingo Card!"),
           ]),
         ]
       }
@@ -227,10 +230,11 @@ var app = app || {};
       view: function(vnode) {
         return [ 
           m(NavBar),
-          // m(Toolbar, { style: { backgroundColor: bgColour }, shadowDepth: 1, compact: true}, [
-          //   m(ToolbarTitle, { text: bingoGame.gameName}),
-          //   m(ToolbarTitle, { text: "Card #" + bingoCard.cardId, style: { "text-align": "right" }}),
-          // ]),
+          m('div', {class: "row"}, [
+            m('h5', {class: "col s12 m6"}, bingoGame.gameName),
+            m('h5', {class: "col m6 hide-on-small-only right-align"}, "Card #" + bingoCard.cardId),
+            m('h6', {class: "col s12 hide-on-med-and-up"}, "Card #" + bingoCard.cardId),
+          ]),
           m('div', {class: "bingoContainer"}, [
             m(BingoTable),
           ])
