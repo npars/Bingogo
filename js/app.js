@@ -191,9 +191,7 @@ var app = app || {};
           //   m(ToolbarTitle, { text: "Card #" + bingoCard.cardId, style: { "text-align": "right" }}),
           // ]),
           m('div', {class: "bingoContainer"}, [
-            // m('div', {class: "col s12"}, [
-              m(BingoTable)
-            // ])
+            m(BingoTable)
           ])
         ];
       }

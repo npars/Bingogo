@@ -49,10 +49,16 @@ td .content {
   justify-content: center;
   display: flex;
   padding: 3px 3px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 td .selected {
-    background: #f55;
+  background: #f55;
 }
 
 .limit-height {
