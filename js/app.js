@@ -103,6 +103,33 @@ var app = app || {};
     };
   }
 
+  const Dab = function(initialVnode) {
+    var rotation = (Math.random() * 360) | 0;
+    return {
+      view: function(vnode) {
+        return m("svg", {
+          style: {
+            position: "absolute",
+            overflow: "visible"
+          },
+          width: "90%",
+          viewBox: "0 0 159 159",
+          preserveAspectRatio: "xMidYMid meet",
+        }, [
+          m("g", {
+            transform: "rotate(" + rotation + ",75,80)",
+            fill: "#F55",
+            stroke: "none"
+          }, [
+            m("path", {
+              d: "M65.02 6.26C60.1 6.39 55.44 7.85 46.4 12.51C23.79 23.81 14.08 33.39 5.3 52.94C2.24 59.72 1.18 64.24 0.65 73.55C-0.28 87.92 1.98 98.42 9.03 112.12C14.61 123.16 19.4 128.61 32.83 139.25C45.73 149.63 58.77 154.01 78.18 154.95C88.69 155.34 93.61 154.95 100.93 152.82C121.14 147.23 144.02 129.81 151.33 114.25C157.72 100.95 159.31 91.91 158.25 75.15C157.45 60.79 157.05 59.32 151.86 48.82C143.48 32.46 130.98 20.35 113.96 12.24C98.53 4.93 83.64 2.13 74.73 5.06C72.86 5.59 68.48 6.12 65.02 6.26Z"
+            }),
+          ]),
+        ]);
+      }
+    }
+  }
+
   // Pages ////////////////////////
 
   const CreatePage = function(initialVnode) {
@@ -187,9 +214,10 @@ var app = app || {};
           [m("tr", {class: "bingoHeaderRow"}, [...header].map(c => m("td", {class: "bingoHeaderCell"}, m("div", {class: "content"}, m("div", {class: "valign-wrapper center-align"}, c)))))].concat(
             [...Array(rowLength).keys()].map(row =>
               m("tr", [...Array(colLength).keys()].map(col => 
-                m("td", m("div", {class: "content" + (bingoCard.state[col + row * rowLength] ? " selected" : ""), onclick: () => bingoCard.toggle(row, col)}, 
-                  m("div", {class: "valign-wrapper center-align"}, bingoCard.cardEntries[col + row * rowLength])
-                ))
+                m("td", m("div", {class: "content", onclick: () => bingoCard.toggle(row, col)},  [
+                  m("div", {style: {"z-index": 100}, class: "valign-wrapper center-align"}, bingoCard.cardEntries[col + row * rowLength]),
+                  bingoCard.state[col + row * rowLength] && m(Dab),
+                ]))
               ))
         )));
       }
@@ -204,7 +232,7 @@ var app = app || {};
           //   m(ToolbarTitle, { text: "Card #" + bingoCard.cardId, style: { "text-align": "right" }}),
           // ]),
           m('div', {class: "bingoContainer"}, [
-            m(BingoTable)
+            m(BingoTable),
           ])
         ];
       }
