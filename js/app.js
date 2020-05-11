@@ -3,10 +3,6 @@ var app = app || {};
 (function (window) {
   'use strict';
 
-  // const { Button, Toolbar, ToolbarTitle, TextField} = polythene
-
-  const bgColour = "#f55"
-
   // Functions ////////////////////////
 
   function mulberry32(a) {
@@ -38,6 +34,19 @@ var app = app || {};
     return new BingoGame(seed, gameName, gameArray);
   }
 
+  var getStateFromLocalStorage = function(serializedGame, cardId) {
+      var state = localStorage.getItem([serializedGame, cardId].join("/"));
+      if (!state) {
+        return [];
+      }
+
+      return state.split(",").map(v => v === "true");
+  }
+
+  var setStateInLocalStorage = function(serializedGame, cardId, state) {
+    localStorage.setItem([serializedGame, cardId].join("/"), state.join(","));
+  }
+
   // Classes ////////////////////////
 
   class BingoGame {
@@ -49,12 +58,15 @@ var app = app || {};
   }
 
   class BingoCard {
-    cardSize = 5*5;
+    rowLen = 5;
+    colLen = 5;
+    cardSize = this.rowLen * this.colLen;
 
-    constructor(bingoGame, cardId) {
+    constructor(bingoGame, cardId, serializedGame) {
       this.bingoGame = bingoGame;
       this.cardId = cardId;
-      this.state = [[],[],[],[],[]]
+      this.serializedGame = serializedGame;
+      this.state = getStateFromLocalStorage(serializedGame, cardId);
 
       var rng = mulberry32(this.bingoGame.seed * (this.cardId * 7));
 
@@ -71,7 +83,8 @@ var app = app || {};
     }
 
     toggle(row, col) {
-      this.state[row][col] = !this.state[row][col];
+      this.state[col + row * this.rowLen] = !this.state[col + row * this.rowLen];
+      setStateInLocalStorage(this.serializedGame, this.cardId, this.state);
     }
   }
 
@@ -162,7 +175,7 @@ var app = app || {};
     var bingoGame = deserializeGame(serializedGame);
 
     var cardId = m.route.param("cardId");
-    var bingoCard = new BingoCard(bingoGame, cardId);
+    var bingoCard = new BingoCard(bingoGame, cardId, serializedGame);
 
     var BingoTable = {
       view: function() {
@@ -174,7 +187,7 @@ var app = app || {};
           [m("tr", {class: "bingoHeaderRow"}, [...header].map(c => m("td", {class: "bingoHeaderCell"}, m("div", {class: "content"}, m("div", {class: "valign-wrapper center-align"}, c)))))].concat(
             [...Array(rowLength).keys()].map(row =>
               m("tr", [...Array(colLength).keys()].map(col => 
-                m("td", m("div", {class: "content" + (bingoCard.state[row][col] ? " selected" : ""), onclick: () => bingoCard.toggle(row, col)}, 
+                m("td", m("div", {class: "content" + (bingoCard.state[col + row * rowLength] ? " selected" : ""), onclick: () => bingoCard.toggle(row, col)}, 
                   m("div", {class: "valign-wrapper center-align"}, bingoCard.cardEntries[col + row * rowLength])
                 ))
               ))
@@ -203,5 +216,5 @@ var app = app || {};
     "/create": CreatePage,
     "/game/:gameId": GamePage,
     "/game/:gameId/:cardId": BingoCardPage,
-})
+  })
 })(window);
