@@ -58,11 +58,11 @@ var app = app || {};
   }
 
   class BingoCard {
-    rowLen = 5;
-    colLen = 5;
-    cardSize = this.rowLen * this.colLen;
-
     constructor(bingoGame, cardId, serializedGame) {
+      this.rowLen = 5;
+      this.colLen = 5;
+      this.cardSize = this.rowLen * this.colLen;
+
       this.bingoGame = bingoGame;
       this.cardId = cardId;
       this.serializedGame = serializedGame;
