@@ -4,7 +4,6 @@ var app = app || {};
   'use strict';
 
   // Functions ////////////////////////
-
   function mulberry32(a) {
     return function() {
       var t = a += 0x6D2B79F5;
@@ -89,9 +88,9 @@ var app = app || {};
   }
 
   // Components ///////////////////
-  const NavBar = function(initialVnode) {
+  const NavBar = function() {
     return { 
-      view: function(vnode) {
+      view: function() {
         return m("nav",
           m("div", {class: "col s12"}, [
             m("div", {class: "nav-wrapper"}, [
@@ -103,10 +102,10 @@ var app = app || {};
     };
   }
 
-  const Dab = function(initialVnode) {
+  const Dab = function() {
     var rotation = (Math.random() * 360) | 0;
     return {
-      view: function(vnode) {
+      view: function() {
         return m("svg", {
           style: {
             position: "absolute",
@@ -132,9 +131,7 @@ var app = app || {};
 
   // Pages ////////////////////////
 
-  const CreatePage = function(initialVnode) {
-    var defaultEntries = [...Array(75).keys()].map(i => i + 1).join("\n");
-
+  const CreatePage = function() {
     var entriesText;
     var gameName;
 
@@ -147,7 +144,7 @@ var app = app || {};
     }
 
     return {
-      view: function(vnode) {
+      view: function() {
         return [
           m(NavBar),
           m("div", {class: "container"}, [
@@ -170,14 +167,14 @@ var app = app || {};
     }
   }
 
-  const GamePage = function(initialVnode) {
+  const GamePage = function() {
     var newCard = function() {
       var cardId = (Math.random() * 100000) | 0
       window.location.href = "#!/game/" + m.route.param("gameId") + "/" + cardId;
     }
 
     return {
-      view: function(vnode) {
+      view: function() {
         var serializedGame = m.route.param("gameId");
         if (!serializedGame) {
           return m("div", "Invalid Game URL!")
@@ -197,7 +194,7 @@ var app = app || {};
     }
   }
 
-  const BingoCardPage = function(initialVnode) {
+  const BingoCardPage = function() {
     var serializedGame = m.route.param("gameId");
     if (!serializedGame) {
       return m("div", "Invalid Game URL!")
@@ -227,7 +224,7 @@ var app = app || {};
     }
 
     return {
-      view: function(vnode) {
+      view: function() {
         return [ 
           m(NavBar),
           m('div', {class: "row"}, [
