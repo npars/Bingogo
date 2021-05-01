@@ -4,6 +4,12 @@ var app = app || {};
   'use strict';
 
   // Functions ////////////////////////
+  /**
+   * Seeded random number generator.
+   * 
+   * @param {number} a the seed for the random number generator
+   * @returns {number} a random number
+   */
   function mulberry32(a) {
     return function() {
       var t = a += 0x6D2B79F5;
@@ -13,12 +19,24 @@ var app = app || {};
     }
   }
 
+  /**
+   * Serialize a BingoGame object into a compressed URI encoded string.
+   * 
+   * @param {BingoGame} bingoGame The game to serialize.
+   * @returns {string} A URI encoded string.
+   */
   var serializeGame = function(bingoGame) {
     const version = 100;
     var delimitedGame = [version, bingoGame.seed, bingoGame.gameName, ...bingoGame.gameEntries].join("\0");
     return LZString.compressToEncodedURIComponent(delimitedGame);
   }
 
+  /**
+   * Deserialize a compressed URI encoded BingoGame instance.
+   * 
+   * @param {string} compressedGame A URI encoded string containing a compressed BingoGame.
+   * @returns {BingoGame} A BingoGame instance.
+   */
   var deserializeGame = function(compressedGame) {
     var delimitedGame = LZString.decompressFromEncodedURIComponent(compressedGame);
 
@@ -33,6 +51,13 @@ var app = app || {};
     return new BingoGame(seed, gameName, gameArray);
   }
 
+  /**
+   * Load card state from storage.
+   * 
+   * @param {string} serializedGame The serialized game that the card belongs to.
+   * @param {number} cardId The id of the card to retrieve the state for.
+   * @returns {boolean[]} An array of booleans indicating the current state of the card.
+   */
   var getStateFromLocalStorage = function(serializedGame, cardId) {
       var state = localStorage.getItem([serializedGame, cardId].join("/"));
       if (!state) {
@@ -42,12 +67,22 @@ var app = app || {};
       return state.split(",").map(v => v === "true");
   }
 
+  /**
+   * Save card state to storage.
+   * 
+   * @param {string} serializedGame The serialized game that the card belongs to.
+   * @param {number} cardId The id of the card to save the state for.
+   * @param {boolean[]} state An array of booleans indicating the current state of the card.
+   */
   var setStateInLocalStorage = function(serializedGame, cardId, state) {
     localStorage.setItem([serializedGame, cardId].join("/"), state.join(","));
   }
 
   // Classes ////////////////////////
 
+  /**
+   * BingoGame class. Stores the details of a bingo game.
+   */
   class BingoGame {
     constructor(seed, gameName, gameEntries) {
       this.seed = seed;
@@ -56,6 +91,11 @@ var app = app || {};
     }
   }
 
+  /**
+   * BingoCard class. Stores the state of a single card within a game.
+   * Each card has a randomized state based on the base game seed combined
+   * with the card id. The center entry of the card is always set to "FREE".
+   */
   class BingoCard {
     constructor(bingoGame, cardId, serializedGame) {
       this.rowLen = 5;
@@ -81,6 +121,12 @@ var app = app || {};
       }
     }
 
+    /**
+     * Toggle the state of an entry on this card.
+     * 
+     * @param {number} row The row number of the entry.
+     * @param {number} col The column number of the entry.
+     */
     toggle(row, col) {
       this.state[col + row * this.rowLen] = !this.state[col + row * this.rowLen];
       setStateInLocalStorage(this.serializedGame, this.cardId, this.state);
@@ -88,6 +134,11 @@ var app = app || {};
   }
 
   // Components ///////////////////
+  /**
+   * NavBar component.
+   * 
+   * @returns the Navigation Bar at the top of every page.
+   */
   const NavBar = function() {
     return { 
       view: function() {
@@ -102,6 +153,11 @@ var app = app || {};
     };
   }
 
+  /**
+   * Dab component.
+   * 
+   * @returns a "dab" svg for indicating an entry has been clicked.
+   */
   const Dab = function() {
     var rotation = (Math.random() * 360) | 0;
     return {
@@ -131,6 +187,11 @@ var app = app || {};
 
   // Pages ////////////////////////
 
+  /**
+   * CreatePage page.
+   * 
+   * @returns a page for creating a new game.
+   */
   const CreatePage = function() {
     var entriesText;
     var gameName;
@@ -167,6 +228,11 @@ var app = app || {};
     }
   }
 
+  /**
+   * GamePage page.
+   * 
+   * @returns the starting game page for players.
+   */
   const GamePage = function() {
     var newCard = function() {
       var cardId = (Math.random() * 100000) | 0
@@ -194,6 +260,11 @@ var app = app || {};
     }
   }
 
+  /**
+   * BingoCardPage page.
+   * 
+   * @returns the card page that contains a generated bingo card for the player.
+   */
   const BingoCardPage = function() {
     var serializedGame = m.route.param("gameId");
     if (!serializedGame) {
