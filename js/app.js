@@ -3,6 +3,8 @@ var app = app || {};
 (function (window) {
   'use strict';
 
+  const SEPARATOR = "\0";
+
   // Functions ////////////////////////
   /**
    * Seeded random number generator.
@@ -27,7 +29,7 @@ var app = app || {};
    */
   var serializeGame = function(bingoGame) {
     const version = 100;
-    var delimitedGame = [version, bingoGame.seed, bingoGame.gameName, ...bingoGame.gameEntries].join("\0");
+    var delimitedGame = [version, bingoGame.seed, bingoGame.gameName, ...bingoGame.gameEntries].join(SEPARATOR);
     return LZString.compressToEncodedURIComponent(delimitedGame);
   }
 
@@ -40,7 +42,7 @@ var app = app || {};
   var deserializeGame = function(compressedGame) {
     var delimitedGame = LZString.decompressFromEncodedURIComponent(compressedGame);
 
-    var gameArray = delimitedGame.split("\0");
+    var gameArray = delimitedGame.split(SEPARATOR);
     var version = parseInt(gameArray.shift());
     if (version !== 100) {
       throw "Failed to parse game data!";
@@ -77,6 +79,20 @@ var app = app || {};
   var setStateInLocalStorage = function(serializedGame, cardId, state) {
     localStorage.setItem([serializedGame, cardId].join("/"), state.join(","));
   }
+
+  var getHostStateFromLocalStorage = function(serializedGame) {
+    var state = localStorage.getItem([serializedGame, "host"].join("/"));
+    if (!state) {
+      return new Set();
+    }
+
+    return new Set(state.split(SEPARATOR));
+  }
+
+  var setHostStateFromLocalStorage = function(serializedGame, state) {
+    localStorage.setItem([serializedGame, "host"].join("/"), [...state].join(SEPARATOR));
+  }
+
 
   // Classes ////////////////////////
 
@@ -346,7 +362,7 @@ var app = app || {};
     }
     var bingoGame = deserializeGame(serializedGame);
 
-    var calledEntries = new Set();
+    var calledEntries = getHostStateFromLocalStorage(serializedGame);
 
     var checkCardId;
     var checkBingoCard;
@@ -357,6 +373,7 @@ var app = app || {};
       } else {
         calledEntries.delete(e.target.nextSibling.textContent);
       }
+      setHostStateFromLocalStorage(serializedGame, calledEntries);
     }
 
     var checkCard = function() {
@@ -378,7 +395,12 @@ var app = app || {};
             m('div', {class: "col s4"}, [
               m('h6', "Called Entries"),
               m('form', {action: "#"},
-                bingoGame.gameEntries.map(entry => m("p", m("label", [m("input", {type: "checkbox", class: "filled-in", onchange: toggleCalledEntry}), m("span", entry)])))
+                bingoGame.gameEntries.map(entry => 
+                  m("p", m("label", [
+                    m("input", {type: "checkbox", class: "filled-in", onchange: toggleCalledEntry, ...(calledEntries.has(entry) && {checked: "checked"})}), 
+                    m("span", entry)
+                  ]))
+                )
               ),
             ]),
             m('div', {class: "col s8"}, [
