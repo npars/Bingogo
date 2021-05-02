@@ -16,7 +16,7 @@ var app = app || {};
       t = Math.imul(t ^ t >>> 15, t | 1);
       t ^= t + Math.imul(t ^ t >>> 7, t | 61);
       return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    }
+    };
   }
 
   /**
@@ -97,7 +97,11 @@ var app = app || {};
    * with the card id. The center entry of the card is always set to "FREE".
    */
   class BingoCard {
-    constructor(bingoGame, cardId, serializedGame) {
+    constructor(bingoGame, cardId, serializedGame, calledEntries) {
+      if (serializedGame && calledEntries) {
+        throw new Error("Invalid arguments, must pass either serializedGame or calledEntries");
+      }
+
       this.rowLen = 5;
       this.colLen = 5;
       this.cardSize = this.rowLen * this.colLen;
@@ -105,7 +109,6 @@ var app = app || {};
       this.bingoGame = bingoGame;
       this.cardId = cardId;
       this.serializedGame = serializedGame;
-      this.state = getStateFromLocalStorage(serializedGame, cardId);
 
       var rng = mulberry32(this.bingoGame.seed * (this.cardId * 7));
 
@@ -119,6 +122,14 @@ var app = app || {};
         }
         this.cardEntries.push(entryPool.splice([entryPool.length * rng() | 0], 1)[0])
       }
+
+      if (serializedGame) {
+        this.state = getStateFromLocalStorage(serializedGame, cardId);
+      } else if (calledEntries) {
+        this.state = this.cardEntries.map(entry => entry == "FREE" || calledEntries.has(entry));
+      } else {
+        throw new Error("Invalid arguments, must pass either serializedGame or calledEntries");
+      }
     }
 
     /**
@@ -128,8 +139,10 @@ var app = app || {};
      * @param {number} col The column number of the entry.
      */
     toggle(row, col) {
-      this.state[col + row * this.rowLen] = !this.state[col + row * this.rowLen];
-      setStateInLocalStorage(this.serializedGame, this.cardId, this.state);
+      if (this.serializedGame) {
+        this.state[col + row * this.rowLen] = !this.state[col + row * this.rowLen];
+        setStateInLocalStorage(this.serializedGame, this.cardId, this.state);
+      }
     }
   }
 
@@ -182,6 +195,35 @@ var app = app || {};
           ]),
         ]);
       }
+    }
+  }
+
+  /**
+   * BingoTable component.
+   * 
+   * 
+   */
+  var BingoTable = {
+    view: function(vnode) {
+      var header = "BINGO";
+      const rowLength = 5;
+      const colLength = 5;
+      var bingoCard = vnode.attrs.bingoCard;
+      
+      if (!bingoCard) {
+        return null;
+      }
+
+      return m("table", {class: "bingoTable card center-align"}, 
+        [m("tr", {class: "bingoHeaderRow"}, [...header].map(c => m("td", {class: "bingoHeaderCell"}, m("div", {class: "content"}, m("div", {class: "valign-wrapper center-align"}, c)))))].concat(
+          [...Array(rowLength).keys()].map(row =>
+            m("tr", [...Array(colLength).keys()].map(col => 
+              m("td", m("div", {class: "content", onclick: () => bingoCard.toggle(row, col)},  [
+                m("div", {style: {"z-index": 100}, class: "valign-wrapper center-align"}, bingoCard.cardEntries[col + row * rowLength]),
+                bingoCard.state[col + row * rowLength] && m(Dab),
+              ]))
+            ))
+      )));
     }
   }
 
@@ -275,25 +317,6 @@ var app = app || {};
     var cardId = m.route.param("cardId");
     var bingoCard = new BingoCard(bingoGame, cardId, serializedGame);
 
-    var BingoTable = {
-      view: function() {
-        var header = "BINGO";
-        const rowLength = 5;
-        const colLength = 5;
-  
-        return m("table", {class: "bingoTable card center-align"}, 
-          [m("tr", {class: "bingoHeaderRow"}, [...header].map(c => m("td", {class: "bingoHeaderCell"}, m("div", {class: "content"}, m("div", {class: "valign-wrapper center-align"}, c)))))].concat(
-            [...Array(rowLength).keys()].map(row =>
-              m("tr", [...Array(colLength).keys()].map(col => 
-                m("td", m("div", {class: "content", onclick: () => bingoCard.toggle(row, col)},  [
-                  m("div", {style: {"z-index": 100}, class: "valign-wrapper center-align"}, bingoCard.cardEntries[col + row * rowLength]),
-                  bingoCard.state[col + row * rowLength] && m(Dab),
-                ]))
-              ))
-        )));
-      }
-    }
-
     return {
       view: function() {
         return [ 
@@ -304,9 +327,74 @@ var app = app || {};
             m('h6', {class: "col s12 hide-on-med-and-up"}, "Card #" + bingoCard.cardId),
           ]),
           m('div', {class: "bingoContainer"}, [
-            m(BingoTable),
+            m(BingoTable, {bingoCard: bingoCard}),
           ])
         ];
+      }
+    }
+  }
+
+  /**
+   * BingoHostPage page.
+   * 
+   * @returns the page for a host to manage a game being played.
+   */
+  const BingoHostPage = function() {
+    var serializedGame = m.route.param("gameId");
+    if (!serializedGame) {
+      return m("div", "Invalid Game URL!")
+    }
+    var bingoGame = deserializeGame(serializedGame);
+
+    var calledEntries = new Set();
+
+    var checkCardId;
+    var checkBingoCard;
+    
+    var toggleCalledEntry = function(e) {
+      if (e.target.checked) {
+        calledEntries.add(e.target.nextSibling.textContent);
+      } else {
+        calledEntries.delete(e.target.nextSibling.textContent);
+      }
+    }
+
+    var checkCard = function() {
+      checkBingoCard = new BingoCard(bingoGame, checkCardId, null, calledEntries);
+    }
+
+    var hideCard = function() {
+      checkBingoCard = null;
+    }
+
+    return {
+      view: function() {
+        return [
+          m(NavBar),
+          m('div', {class: "row"}, [
+            m('h5', {class: "col s12"}, bingoGame.gameName),
+          ]),
+          m('div', {class: "row"},
+            m('div', {class: "col s4"}, [
+              m('h6', "Called Entries"),
+              m('form', {action: "#"},
+                bingoGame.gameEntries.map(entry => m("p", m("label", [m("input", {type: "checkbox", class: "filled-in", onchange: toggleCalledEntry}), m("span", entry)])))
+              ),
+            ]),
+            m('div', {class: "col s8"}, [
+              m('div', {class: "card"}, m('div', {class: "card-content"}, [
+                m('span', {class: "card-title"}, "Check Card"),
+                m("div", {class: "input-field"}, [
+                  m("input", {id: "checkCardId", type: "number", class: "validate", oninput: e => checkCardId = e.target.value}),
+                  m("label", {for: "checkCardId"}, "Card Id"),
+                  m("a", {class: "waves-effect waves-light btn", onclick: checkCard}, "Check"),
+                  m("a", {class: "waves-effect waves-light btn right", onclick: hideCard}, "Hide"),
+                ]),
+                m('div', {class: "bingoContainer"}, m(BingoTable, {bingoCard: checkBingoCard}))
+              ]))
+            ])
+          ),
+        ]
       }
     }
   }
@@ -315,6 +403,7 @@ var app = app || {};
   m.route(document.getElementById("root"), "/create", {
     "/create": CreatePage,
     "/game/:gameId": GamePage,
+    "/game/:gameId/host": BingoHostPage,
     "/game/:gameId/:cardId": BingoCardPage,
   })
 })(window);
