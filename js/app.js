@@ -408,9 +408,10 @@ var app = app || {};
                 m('span', {class: "card-title"}, "Check Card"),
                 m("div", {class: "input-field"}, [
                   m("input", {id: "checkCardId", type: "number", class: "validate", oninput: e => checkCardId = e.target.value}),
-                  m("label", {for: "checkCardId"}, "Card Id"),
-                  m("a", {class: "waves-effect waves-light btn", onclick: checkCard}, "Check"),
-                  m("a", {class: "waves-effect waves-light btn right", onclick: hideCard}, "Hide"),
+                  m("label", {for: "checkCardId"}, "Card #"),
+                  m("a", {class: "waves-effect waves-light btn", onclick: checkCard,}, "Check"),
+                  " ",
+                  m("a", {class: "waves-effect waves-light btn-flat" + (checkBingoCard ? "" : " disabled"), onclick: hideCard}, "Hide"),
                 ]),
                 m('div', {class: "bingoContainer"}, m(BingoTable, {bingoCard: checkBingoCard}))
               ]))
