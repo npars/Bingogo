@@ -395,7 +395,7 @@ var app = app || {};
             m('div', {class: "col s4"}, [
               m('h6', "Called Entries"),
               m('form', {action: "#"},
-                bingoGame.gameEntries.map(entry => 
+                [...bingoGame.gameEntries].sort().map(entry => 
                   m("p", m("label", [
                     m("input", {type: "checkbox", class: "filled-in", onchange: toggleCalledEntry, ...(calledEntries.has(entry) && {checked: "checked"})}), 
                     m("span", entry)
