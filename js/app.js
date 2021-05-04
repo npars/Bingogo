@@ -245,6 +245,33 @@ var app = app || {};
 
   // Pages ////////////////////////
 
+  const HomePage = function() {
+    return {
+      view: function() {
+        return [
+          m(NavBar),
+          m("div", {class: "container"}, m("div", {class: "row"}, m("div", {class: "col offset-m2 s12 m8"},
+            m("div", {class: "card"}, [
+              m("div", {class: "card-content"}, [
+                m("span", {class: "card-title"}, "Welcome!"),
+                m("p", "Bingogo is a website for creating and playing user made bingo games. Create " +
+                       "games like \"Buzzword Bingo\" and play with your friends and co-workers!"),
+                m("h6", "How it works"),
+                m("p", "Create a new game by entering a title for the game and all the entries you " +
+                      "would like each bingo card to draw from. Once your game is created you can " +
+                      "share the link to the players who can draw their card and play in their " +
+                      "browser or print their card and play on paper.")
+              ]),
+              m("div", {class: "card-action"}, [
+                m("a", {href: "#!/create/"}, "Get Started!")
+              ])
+            ])
+          )))
+        ];
+      }
+    }
+  }
+
   /**
    * CreatePage page.
    * 
@@ -423,7 +450,8 @@ var app = app || {};
   }
 
   // Route ////////////////////////
-  m.route(document.getElementById("root"), "/create", {
+  m.route(document.getElementById("root"), "/", {
+    "/": HomePage,
     "/create": CreatePage,
     "/game/:gameId": GamePage,
     "/game/:gameId/host": BingoHostPage,
