@@ -258,12 +258,12 @@ var app = app || {};
                        "games like \"Buzzword Bingo\" and play with your friends and co-workers!"),
                 m("h6", "How it works"),
                 m("p", "Create a new game by entering a title for the game and all the entries you " +
-                      "would like each bingo card to draw from. Once your game is created you can " +
-                      "share the link to the players who can draw their card and play in their " +
-                      "browser or print their card and play on paper.")
-              ]),
-              m("div", {class: "card-action"}, [
-                m("a", {href: "#!/create/"}, "Get Started!")
+                       "would like each bingo card to draw from. Once your game is created you can " +
+                       "share the link to the players who can draw their card and play in their " +
+                       "browser or print their card and play on paper."),
+                m("p", {class: "center-align pt1"}, 
+                  m("a", {class: "waves-effect waves-light btn-large", href: "#!/create/"}, "Get Started!")
+                )
               ])
             ])
           )))
