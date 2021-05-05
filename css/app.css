@@ -5,6 +5,10 @@
 * Browsers: last 4 version
 */
 
+body {
+  background-image: url('../img/bg.png');
+}
+
 .col {
   padding: 0 .75rem;
 }
