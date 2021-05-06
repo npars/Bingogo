@@ -302,20 +302,20 @@ var app = app || {};
             m("div", {class: "card"}, [
               m("div", {class: "card-content"}, [
                 m("div", {class: "row"}, [
-                  m("div", {class: "input-field col s11"}, [
+                  m("div", {class: "input-field col s10 l11"}, [
                     m("input", {id: "gameTitle", type: "text", class: "validate", oninput: e => gameName = e.target.value}),
                     m("label", {for: "gameTitle"}, "Game Title"),
                   ]),
-                  m("span", {class: "col s1"}, 
+                  m("span", {class: "col s2 l1"}, 
                     m("i", {class: "material-icons small pt2 tooltipped clickable", "data-position": "left", "data-tooltip": titleHelp}, "help_outline")
                   )
                 ]),
                 m("div", {class: "row"}, [
-                  m("div", {class: "input-field col s11"}, [
+                  m("div", {class: "input-field col s10 l11"}, [
                     m("textarea", {id: "entryTextArea", class: "materialize-textarea limit-height", oninput: e => entriesText = e.target.value}),
                     m("label", {for: "entryTextArea"}, "Bingo Entries")
                   ]),
-                  m("span", {class: "col s1"}, 
+                  m("span", {class: "col s2 l1"}, 
                     m("i", {class: "material-icons small pt2 tooltipped clickable", "data-position": "left", "data-tooltip": entryHelp}, "help_outline")
                   )
                 ]),
