@@ -245,6 +245,33 @@ var app = app || {};
 
   // Pages ////////////////////////
 
+  const HomePage = function() {
+    return {
+      view: function() {
+        return [
+          m(NavBar),
+          m("div", {class: "container"}, m("div", {class: "row"}, m("div", {class: "col offset-l2 s12 l8"},
+            m("div", {class: "card"}, [
+              m("div", {class: "card-content"}, [
+                m("span", {class: "card-title"}, "Welcome!"),
+                m("p", "Bingogo is a website for creating and playing user made bingo games. Create " +
+                       "games like \"Buzzword Bingo\" and play with your friends and co-workers!"),
+                m("h6", "How it works"),
+                m("p", "Create a new game by entering a title for the game and all the entries you " +
+                       "would like each bingo card to draw from. Once your game is created you can " +
+                       "share the link to the players who can draw their card and play in their " +
+                       "browser or print their card and play on paper."),
+                m("p", {class: "center-align pt1"}, 
+                  m("a", {class: "waves-effect waves-light btn-large", href: "#!/create/"}, "Get Started!")
+                )
+              ])
+            ])
+          )))
+        ];
+      }
+    }
+  }
+
   /**
    * CreatePage page.
    * 
@@ -262,26 +289,47 @@ var app = app || {};
       window.location.href = '#!/game/' + serializedGame;
     }
 
+    const titleHelp = "The game title will be visible to each player."
+    const entryHelp = "Each line entered will be used as an entry when players draw their cards. <br/>" +
+                      "Each card drawn will randomly pick 24 entries from those available. <br/>" +
+                      "The center of each card will always be a FREE entry.";
+
     return {
       view: function() {
         return [
           m(NavBar),
-          m("div", {class: "container"}, [
-            m("div", {class: "row"}, [
-              m("div", {class: "input-field col s12"}, [
-                m("input", {id: "gameTitle", type: "text", class: "validate", oninput: e => gameName = e.target.value}),
-                m("label", {for: "gameTitle"}, "Game Title")
-              ]),
-              m("div", {class: "input-field col s12"}, [
-                m("textarea", {id: "entryTextArea", class: "materialize-textarea limit-height", oninput: e => entriesText = e.target.value}),
-                m("label", {for: "entryTextArea"}, "Bingo Entries")
-              ]),
-              m("div", {class: "input-field col s12"}, [
-                m("a", {class: "waves-effect waves-light btn", onclick: createGame}, "Create Game"),
+          m("div", {class: "container"}, m("div", {class: "row"}, m("div", {class: "col offset-l2 s12 l8"},
+            m("div", {class: "card"}, [
+              m("div", {class: "card-content"}, [
+                m("div", {class: "row"}, [
+                  m("div", {class: "input-field col s11"}, [
+                    m("input", {id: "gameTitle", type: "text", class: "validate", oninput: e => gameName = e.target.value}),
+                    m("label", {for: "gameTitle"}, "Game Title"),
+                  ]),
+                  m("span", {class: "col s1"}, 
+                    m("i", {class: "material-icons small pt2 tooltipped clickable", "data-position": "left", "data-tooltip": titleHelp}, "help_outline")
+                  )
+                ]),
+                m("div", {class: "row"}, [
+                  m("div", {class: "input-field col s11"}, [
+                    m("textarea", {id: "entryTextArea", class: "materialize-textarea limit-height", oninput: e => entriesText = e.target.value}),
+                    m("label", {for: "entryTextArea"}, "Bingo Entries")
+                  ]),
+                  m("span", {class: "col s1"}, 
+                    m("i", {class: "material-icons small pt2 tooltipped clickable", "data-position": "left", "data-tooltip": entryHelp}, "help_outline")
+                  )
+                ]),
+                m("div", {class: "input-field center-align"}, [
+                  m("a", {class: "waves-effect waves-light btn-large", onclick: createGame}, "Create Game"),
+                ]),
               ]),
             ]),
-          ]),
+          )))
         ]
+      },
+      oncreate: function() {
+        var elems = document.querySelectorAll('.tooltipped');
+        M.Tooltip.init(elems);
       }
     }
   }
@@ -423,7 +471,8 @@ var app = app || {};
   }
 
   // Route ////////////////////////
-  m.route(document.getElementById("root"), "/create", {
+  m.route(document.getElementById("root"), "/", {
+    "/": HomePage,
     "/create": CreatePage,
     "/game/:gameId": GamePage,
     "/game/:gameId/host": BingoHostPage,
