@@ -250,7 +250,7 @@ var app = app || {};
       view: function() {
         return [
           m(NavBar),
-          m("div", {class: "container"}, m("div", {class: "row"}, m("div", {class: "col offset-m2 s12 m8"},
+          m("div", {class: "container"}, m("div", {class: "row"}, m("div", {class: "col offset-l2 s12 l8"},
             m("div", {class: "card"}, [
               m("div", {class: "card-content"}, [
                 m("span", {class: "card-title"}, "Welcome!"),
@@ -289,26 +289,47 @@ var app = app || {};
       window.location.href = '#!/game/' + serializedGame;
     }
 
+    const titleHelp = "The game title will be visible to each player."
+    const entryHelp = "Each line entered will be used as an entry when players draw their cards. <br/>" +
+                      "Each card drawn will randomly pick 24 entries from those available. <br/>" +
+                      "The center of each card will always be a FREE entry.";
+
     return {
       view: function() {
         return [
           m(NavBar),
-          m("div", {class: "container"}, [
-            m("div", {class: "row"}, [
-              m("div", {class: "input-field col s12"}, [
-                m("input", {id: "gameTitle", type: "text", class: "validate", oninput: e => gameName = e.target.value}),
-                m("label", {for: "gameTitle"}, "Game Title")
-              ]),
-              m("div", {class: "input-field col s12"}, [
-                m("textarea", {id: "entryTextArea", class: "materialize-textarea limit-height", oninput: e => entriesText = e.target.value}),
-                m("label", {for: "entryTextArea"}, "Bingo Entries")
-              ]),
-              m("div", {class: "input-field col s12"}, [
-                m("a", {class: "waves-effect waves-light btn", onclick: createGame}, "Create Game"),
+          m("div", {class: "container"}, m("div", {class: "row"}, m("div", {class: "col offset-l2 s12 l8"},
+            m("div", {class: "card"}, [
+              m("div", {class: "card-content"}, [
+                m("div", {class: "row"}, [
+                  m("div", {class: "input-field col s11"}, [
+                    m("input", {id: "gameTitle", type: "text", class: "validate", oninput: e => gameName = e.target.value}),
+                    m("label", {for: "gameTitle"}, "Game Title"),
+                  ]),
+                  m("span", {class: "col s1"}, 
+                    m("i", {class: "material-icons small pt2 tooltipped clickable", "data-position": "left", "data-tooltip": titleHelp}, "help_outline")
+                  )
+                ]),
+                m("div", {class: "row"}, [
+                  m("div", {class: "input-field col s11"}, [
+                    m("textarea", {id: "entryTextArea", class: "materialize-textarea limit-height", oninput: e => entriesText = e.target.value}),
+                    m("label", {for: "entryTextArea"}, "Bingo Entries")
+                  ]),
+                  m("span", {class: "col s1"}, 
+                    m("i", {class: "material-icons small pt2 tooltipped clickable", "data-position": "left", "data-tooltip": entryHelp}, "help_outline")
+                  )
+                ]),
+                m("div", {class: "input-field center-align"}, [
+                  m("a", {class: "waves-effect waves-light btn-large", onclick: createGame}, "Create Game"),
+                ]),
               ]),
             ]),
-          ]),
+          )))
         ]
+      },
+      oncreate: function() {
+        var elems = document.querySelectorAll('.tooltipped');
+        M.Tooltip.init(elems);
       }
     }
   }

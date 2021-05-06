@@ -17,6 +17,18 @@ body {
   padding-top: 1rem;
 }
 
+.pt2 {
+  padding-top: 1.5rem;
+}
+
+.clickable {
+  cursor: pointer;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+
 table {
   width: 600px;
 }
