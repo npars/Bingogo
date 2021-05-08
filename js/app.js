@@ -271,7 +271,8 @@ var app = app || {};
                 )
               ])
             ])
-          )))
+          ))),
+          m("a", {class: "github-fork-ribbon", href: "https://github.com/npars/bingogo", "data-ribbon": "Fork me on GitHub", title: "Fork me on GitHub"}, "Fork me on GitHub")
         ];
       }
     }
