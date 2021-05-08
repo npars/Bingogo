@@ -93,6 +93,10 @@ td .selected {
   background: #f55;
 }
 
+label > span {
+  color: black;
+}
+
 .limit-height {
   max-height: 300px;
   overflow-y: scroll !important;
