@@ -283,11 +283,33 @@ var app = app || {};
    * @returns a page for creating a new game.
    */
   const CreatePage = function() {
-    var entriesText;
-    var gameName;
+    var entriesText = "";
+    var gameName = "";
 
     var createGame = function() {
-      var entriesArray = entriesText.split("\n");
+      var isValid = true;
+      
+      if (gameName == "") {
+        document.getElementById("gameTitle").setCustomValidity("Game Title must be set!");
+        isValid = false;
+      } else {
+        document.getElementById("gameTitle").setCustomValidity("");
+      }
+
+      var entriesArray = entriesText.split("\n").map(x => x.trim()).filter(x => x != "");
+      if (entriesArray.length < 24) {
+        document.getElementById("entryTextArea").setCustomValidity("A game requires at least 24 entries, one per line!");
+        isValid = false;
+      } else {
+        document.getElementById("entryTextArea").setCustomValidity("");
+      }
+      
+      document.getElementById("newGameForm").reportValidity();
+
+      if (!isValid) {  
+        return;
+      }
+
       var seed = (Math.random() * 0x7FFFFFFF) | 0;
       
       var serializedGame = serializeGame(new BingoGame(seed, gameName, entriesArray)); 
@@ -297,7 +319,8 @@ var app = app || {};
     const titleHelp = "The game title will be visible to each player."
     const entryHelp = "Each line entered will be used as an entry when players draw their cards. <br/>" +
                       "Each card drawn will randomly pick 24 entries from those available. <br/>" +
-                      "The center of each card will always be a FREE entry.";
+                      "The center of each card will always be a FREE entry. <br/><br/>" +
+                      "TIP: Create a list in an spreadsheet or document and paste when complete.";
 
     return {
       view: function() {
@@ -305,10 +328,10 @@ var app = app || {};
           m(NavBar),
           m("div", {class: "container"}, m("div", {class: "row"}, m("div", {class: "col offset-l2 s12 l8"},
             m("div", {class: "card"}, [
-              m("div", {class: "card-content"}, [
+              m("form", {id: "newGameForm", class: "card-content"}, [
                 m("div", {class: "row"}, [
                   m("div", {class: "input-field col s10 l11"}, [
-                    m("input", {id: "gameTitle", type: "text", class: "validate", oninput: e => gameName = e.target.value}),
+                    m("input", {id: "gameTitle", type: "text", class: "validate", oninput: e => gameName = e.target.value.trim()}),
                     m("label", {for: "gameTitle"}, "Game Title"),
                   ]),
                   m("span", {class: "col s2 l1"}, 
