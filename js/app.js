@@ -245,6 +245,11 @@ var app = app || {};
 
   // Pages ////////////////////////
 
+  /**
+   * HomePage page.
+   * 
+   * @returns the landing page for the site.
+   */
   const HomePage = function() {
     return {
       view: function() {
@@ -261,7 +266,7 @@ var app = app || {};
                        "would like each bingo card to draw from. Once your game is created you can " +
                        "share the link to the players who can draw their card and play in their " +
                        "browser or print their card and play on paper."),
-                m("p", {class: "center-align pt1"}, 
+                m("div", {class: "center-align pt1"}, 
                   m("a", {class: "waves-effect waves-light btn-large", href: "#!/create/"}, "Get Started!")
                 )
               ])
@@ -286,7 +291,7 @@ var app = app || {};
       var seed = (Math.random() * 0x7FFFFFFF) | 0;
       
       var serializedGame = serializeGame(new BingoGame(seed, gameName, entriesArray)); 
-      window.location.href = '#!/game/' + serializedGame;
+      window.location.href = '#!/game/' + serializedGame + "/staging";
     }
 
     const titleHelp = "The game title will be visible to each player."
@@ -319,7 +324,7 @@ var app = app || {};
                     m("i", {class: "material-icons small pt2 tooltipped clickable", "data-position": "left", "data-tooltip": entryHelp}, "help_outline")
                   )
                 ]),
-                m("div", {class: "input-field center-align"}, [
+                m("div", {class: "center-align"}, [
                   m("a", {class: "waves-effect waves-light btn-large", onclick: createGame}, "Create Game"),
                 ]),
               ]),
@@ -330,6 +335,64 @@ var app = app || {};
       oncreate: function() {
         var elems = document.querySelectorAll('.tooltipped');
         M.Tooltip.init(elems);
+      }
+    }
+  }
+
+  const StagingPage = function() {
+    var serializedGame = m.route.param("gameId");
+    if (!serializedGame) {
+      return m("div", "Invalid Game URL!")
+    }
+
+    var bingoGame = deserializeGame(serializedGame);
+
+    var playerUrl = window.location.href.split("#")[0] + "#!/game/" + serializedGame;
+    var shortenedUrl = null;
+
+    var shortenUrl = function() {
+      m.request({
+        method: "GET",
+        url: "https://tinyurl.com/api-create.php?url=" + encodeURIComponent(playerUrl),
+        responseType: "text"
+      })
+      .then(function(data) {
+        shortenedUrl = data;
+      })
+    }
+
+    return {
+      view: function() {
+        return [
+          m(NavBar),
+          m("div", {class: "container"}, m("div", {class: "row"}, m("div", {class: "col offset-l2 s12 l8"},
+            m("div", {class: "card"}, [
+              m("div", {class: "card-content"}, [
+                m("span", {class: "card-title"}, bingoGame.gameName),
+                m("p", "Your game has been successfully created! Bookmark this page so that you can easily return."),
+                m("h6", {class: "pt1"}, "Player Page"),
+                m("p", "Share the below link that allows players to draw a random card."),
+                m("div", {class: "row"}, [
+                  m("input", {id: "player-url", class: "col s10 l11", value: shortenedUrl || playerUrl, readonly: ""}),                  
+                  m("a", {class: "col s2 l1 btn-flat copy-btn", "data-clipboard-target": "#player-url"}, 
+                    m("i", {class: "material-icons"}, "content_copy")
+                  )
+                ]),
+                m("a", {class: "waves-effect waves-light btn", href: "#!/game/" + serializedGame}, "Go to Player Page"),
+                " ",
+                m("a", {class: "waves-effect waves-light btn", onclick: shortenUrl}, "Shorten link with TinyUrl"),
+                m("h6", {class: "pt1"}, "Game Host Page"),
+                m("p", "Use the Game Host Page to easily mark which entries have been called and quickly verify player's cards."),
+                m("div", {class: "pt1"}, 
+                  m("a", {class: "waves-effect waves-light btn", href: "#!/game/" + serializedGame + "/host"}, "Go to Game Host Page")
+                )
+              ])
+            ])
+          )))
+        ];
+      },
+      oncreate: function() {
+        new ClipboardJS(".copy-btn");
       }
     }
   }
@@ -345,23 +408,28 @@ var app = app || {};
       window.location.href = "#!/game/" + m.route.param("gameId") + "/" + cardId;
     }
 
+    var serializedGame = m.route.param("gameId");
+    if (!serializedGame) {
+      return m("div", "Invalid Game URL!")
+    }
+    var bingoGame = deserializeGame(serializedGame);
+
     return {
-      view: function() {
-        var serializedGame = m.route.param("gameId");
-        if (!serializedGame) {
-          return m("div", "Invalid Game URL!")
-        }
-        var bingoGame = deserializeGame(serializedGame);
-        
+      view: function() {        
         return [
           m(NavBar),
-          m('div', {class: "row"}, [
-            m('h5', {class: "col s12 center-align"}, bingoGame.gameName),
-          ]),
-          m("div", {class: "input-field col s12 center-align"}, [
-            m("a", {class: "waves-effect waves-light btn-large", onclick: newCard}, "Give me a Bingo Card!"),
-          ]),
-        ]
+          m("div", {class: "container"}, m("div", {class: "row"}, m("div", {class: "col offset-l2 s12 l8"},
+            m("div", {class: "card"}, [
+              m("div", {class: "card-content"}, [
+                m("span", {class: "card-title"}, bingoGame.gameName),
+                m("div", "You've been invited to play a game of bingo. Click the link below to draw a random card."),
+                m("div", {class: "center-align pt1"}, 
+                  m("a", {class: "waves-effect waves-light btn-large", onclick: newCard}, "Give me a Bingo Card!")
+                )
+              ])
+            ])
+          )))
+        ];
       }
     }
   }
@@ -441,15 +509,17 @@ var app = app || {};
           ]),
           m('div', {class: "row"},
             m('div', {class: "col s4"}, [
-              m('h6', "Called Entries"),
-              m('form', {action: "#"},
-                [...bingoGame.gameEntries].sort().map(entry => 
-                  m("p", m("label", [
-                    m("input", {type: "checkbox", class: "filled-in", onchange: toggleCalledEntry, ...(calledEntries.has(entry) && {checked: "checked"})}), 
-                    m("span", entry)
-                  ]))
+              m('div', {class: "card"}, m('div', {class: "card-content"}, [
+                m('span', {class: "card-title"}, "Called Entries"),
+                m('form', {action: "#"},
+                  [...bingoGame.gameEntries].sort().map(entry => 
+                    m("p", m("label", [
+                      m("input", {type: "checkbox", class: "filled-in", onchange: toggleCalledEntry, ...(calledEntries.has(entry) && {checked: "checked"})}), 
+                      m("span", entry)
+                    ]))
+                  )
                 )
-              ),
+              ]))
             ]),
             m('div', {class: "col s8"}, [
               m('div', {class: "card"}, m('div', {class: "card-content"}, [
@@ -475,6 +545,7 @@ var app = app || {};
     "/": HomePage,
     "/create": CreatePage,
     "/game/:gameId": GamePage,
+    "/game/:gameId/staging": StagingPage,
     "/game/:gameId/host": BingoHostPage,
     "/game/:gameId/:cardId": BingoCardPage,
   })
